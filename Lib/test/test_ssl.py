@@ -21,6 +21,8 @@ import weakref
 import platform
 import sysconfig
 import functools
+import ssl
+
 try:
     import ctypes
 except ImportError:
@@ -221,7 +223,7 @@ def has_tls_version(version):
 
     # check runtime and dynamic crypto policy settings. A TLS version may
     # be compiled in but disabled by a policy or config option.
-    ctx = ssl.SSLContext()
+    ctx = ssl.SSLContext(protocol=ssl.PROTOCOL_TLS_CLIENT)
     if (
             hasattr(ctx, 'minimum_version') and
             ctx.minimum_version != ssl.TLSVersion.MINIMUM_SUPPORTED and
@@ -1130,7 +1132,7 @@ class ContextTests(unittest.TestCase):
     def test_constructor(self):
         for protocol in PROTOCOLS:
             ssl.SSLContext(protocol)
-        ctx = ssl.SSLContext()
+        ctx = ssl.SSLContext(protocol=ssl.PROTOCOL_TLS_CLIENT)
         self.assertEqual(ctx.protocol, ssl.PROTOCOL_TLS)
         self.assertRaises(ValueError, ssl.SSLContext, -1)
         self.assertRaises(ValueError, ssl.SSLContext, 42)
@@ -1191,7 +1193,7 @@ class ContextTests(unittest.TestCase):
                 ctx.options = 0
 
     def test_verify_mode_protocol(self):
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         # Default value
         self.assertEqual(ctx.verify_mode, ssl.CERT_NONE)
         ctx.verify_mode = ssl.CERT_OPTIONAL
@@ -1293,7 +1295,7 @@ class ContextTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             ctx.minimum_version = 42
 
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_1)
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 
         self.assertIn(
             ctx.minimum_version, minimum_range
@@ -1711,7 +1713,7 @@ class ContextTests(unittest.TestCase):
         self._assert_context_options(ctx)
 
     def test_check_hostname(self):
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         self.assertFalse(ctx.check_hostname)
         self.assertEqual(ctx.verify_mode, ssl.CERT_NONE)
 
@@ -2035,7 +2037,7 @@ class SimpleBackgroundTests(unittest.TestCase):
 
     def test_connect_with_context(self):
         # Same as test_connect, but with a separately created context
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         with ctx.wrap_socket(socket.socket(socket.AF_INET)) as s:
             s.connect(self.server_addr)
             self.assertEqual({}, s.getpeercert())
@@ -2055,7 +2057,7 @@ class SimpleBackgroundTests(unittest.TestCase):
         # This should fail because we have no verification certs. Connection
         # failure crashes ThreadedEchoServer, so run this in an independent
         # test method.
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         ctx.verify_mode = ssl.CERT_REQUIRED
         s = ctx.wrap_socket(socket.socket(socket.AF_INET))
         self.addCleanup(s.close)
@@ -2068,7 +2070,7 @@ class SimpleBackgroundTests(unittest.TestCase):
         # OpenSSL 0.9.8n and 1.0.0, as a result the capath directory must
         # contain both versions of each certificate (same content, different
         # filename) for this test to be portable across OpenSSL releases.
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         ctx.verify_mode = ssl.CERT_REQUIRED
         ctx.load_verify_locations(capath=CAPATH)
         with ctx.wrap_socket(socket.socket(socket.AF_INET)) as s:
@@ -2077,7 +2079,7 @@ class SimpleBackgroundTests(unittest.TestCase):
             self.assertTrue(cert)
 
         # Same with a bytes `capath` argument
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         ctx.verify_mode = ssl.CERT_REQUIRED
         ctx.load_verify_locations(capath=BYTES_CAPATH)
         with ctx.wrap_socket(socket.socket(socket.AF_INET)) as s:
@@ -2089,7 +2091,7 @@ class SimpleBackgroundTests(unittest.TestCase):
         with open(SIGNING_CA) as f:
             pem = f.read()
         der = ssl.PEM_cert_to_DER_cert(pem)
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         ctx.verify_mode = ssl.CERT_REQUIRED
         ctx.load_verify_locations(cadata=pem)
         with ctx.wrap_socket(socket.socket(socket.AF_INET)) as s:
@@ -2098,7 +2100,7 @@ class SimpleBackgroundTests(unittest.TestCase):
             self.assertTrue(cert)
 
         # same with DER
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         ctx.verify_mode = ssl.CERT_REQUIRED
         ctx.load_verify_locations(cadata=der)
         with ctx.wrap_socket(socket.socket(socket.AF_INET)) as s:
@@ -2273,7 +2275,7 @@ class SimpleBackgroundTests(unittest.TestCase):
         sock.connect(self.server_addr)
         incoming = ssl.MemoryBIO()
         outgoing = ssl.MemoryBIO()
-        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         ctx.verify_mode = ssl.CERT_NONE
         sslobj = ctx.wrap_bio(incoming, outgoing, False)
         self.ssl_io_loop(sock, incoming, outgoing, sslobj.do_handshake)
@@ -3767,7 +3769,7 @@ class ThreadedTests(unittest.TestCase):
     def test_server_accept(self):
         # Issue #16357: accept() on a SSLSocket created through
         # SSLContext.wrap_socket().
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         context.verify_mode = ssl.CERT_REQUIRED
         context.load_verify_locations(SIGNING_CA)
         context.load_cert_chain(SIGNED_CERTFILE)
@@ -3806,14 +3808,14 @@ class ThreadedTests(unittest.TestCase):
         self.assertEqual(peer, client_addr)
 
     def test_getpeercert_enotconn(self):
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         with context.wrap_socket(socket.socket()) as sock:
             with self.assertRaises(OSError) as cm:
                 sock.getpeercert()
             self.assertEqual(cm.exception.errno, errno.ENOTCONN)
 
     def test_do_handshake_enotconn(self):
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         with context.wrap_socket(socket.socket()) as sock:
             with self.assertRaises(OSError) as cm:
                 sock.do_handshake()
@@ -3859,7 +3861,7 @@ class ThreadedTests(unittest.TestCase):
 
     @requires_tls_version('TLSv1_3')
     def test_tls1_3(self):
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         context.load_cert_chain(CERTFILE)
         context.options |= (
             ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1 | ssl.OP_NO_TLSv1_2
@@ -3946,7 +3948,7 @@ class ThreadedTests(unittest.TestCase):
     def test_default_ecdh_curve(self):
         # Issue #21015: elliptic curve-based Diffie Hellman key exchange
         # should be enabled by default on SSL contexts.
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         context.load_cert_chain(CERTFILE)
         # TLSv1.3 defaults to PFS key agreement and no longer has KEA in
         # cipher name.
@@ -4333,7 +4335,7 @@ class ThreadedTests(unittest.TestCase):
         with open(support.TESTFN, 'wb') as f:
             f.write(TEST_DATA)
         self.addCleanup(support.unlink, support.TESTFN)
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         context.verify_mode = ssl.CERT_REQUIRED
         context.load_verify_locations(SIGNING_CA)
         context.load_cert_chain(SIGNED_CERTFILE)
