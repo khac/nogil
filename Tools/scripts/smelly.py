@@ -4,6 +4,7 @@
 import subprocess
 import sys
 import sysconfig
+from security import safe_command
 
 
 def get_exported_symbols():
@@ -13,7 +14,7 @@ def get_exported_symbols():
 
     args = ('nm', '-p', LIBRARY)
     print("+ %s" % ' '.join(args))
-    proc = subprocess.run(args, stdout=subprocess.PIPE, universal_newlines=True)
+    proc = safe_command.run(subprocess.run, args, stdout=subprocess.PIPE, universal_newlines=True)
     if proc.returncode:
         sys.stdout.write(proc.stdout)
         sys.exit(proc.returncode)

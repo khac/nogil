@@ -19,6 +19,7 @@ import unittest
 # Test import all of the things we're about to try testing up front.
 import _io
 import _pyio
+from security import safe_command
 
 
 @unittest.skipUnless(os.name == 'posix', 'tests requires a posix system.')
@@ -88,8 +89,7 @@ class TestFileIOSignalInterrupt:
         assert len(data_to_write) < 512, 'data_to_write must fit in pipe buf.'
 
         # Start a subprocess to call our read method while handling a signal.
-        self._process = subprocess.Popen(
-                [sys.executable, '-u', '-c',
+        self._process = safe_command.run(subprocess.Popen, [sys.executable, '-u', '-c',
                  'import signal, sys ;'
                  'signal.signal(signal.SIGINT, '
                                'lambda s, f: sys.stderr.write("$\\n")) ;'

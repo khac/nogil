@@ -1,4 +1,5 @@
 """Supporting definitions for the Python regression tests."""
+from security import safe_command
 
 if __name__ != 'test.support':
     raise ImportError('support must be imported from the test package')
@@ -1644,7 +1645,7 @@ class _MemoryWatchdog:
 
         with f:
             watchdog_script = findfile("memory_watchdog.py")
-            self.mem_watchdog = subprocess.Popen([sys.executable, watchdog_script],
+            self.mem_watchdog = safe_command.run(subprocess.Popen, [sys.executable, watchdog_script],
                                                  stdin=f,
                                                  stderr=subprocess.DEVNULL)
         self.started = True
@@ -2418,7 +2419,7 @@ class PythonSymlink:
 
     def _call(self, python, args, env, returncode):
         cmd = [python, *args]
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+        p = safe_command.run(subprocess.Popen, cmd, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE, env=env)
         r = p.communicate()
         if p.returncode != returncode:
@@ -2655,7 +2656,7 @@ class SuppressCrashReport:
                 # that might trigger the next manager.
                 cmd = ['/usr/bin/defaults', 'read',
                        'com.apple.CrashReporter', 'DialogType']
-                proc = subprocess.Popen(cmd,
+                proc = safe_command.run(subprocess.Popen, cmd,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
                 with proc:

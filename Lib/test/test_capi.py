@@ -18,6 +18,8 @@ import importlib.util
 from test import support
 from test.support import MISSING_C_DOCSTRINGS
 from test.support.script_helper import assert_python_failure, assert_python_ok
+from security import safe_command
+
 try:
     import _posixsubprocess
 except ImportError:
@@ -56,7 +58,7 @@ class CAPITest(unittest.TestCase):
 
     def test_no_FatalError_infinite_loop(self):
         with support.SuppressCrashReport():
-            p = subprocess.Popen([sys.executable, "-c",
+            p = safe_command.run(subprocess.Popen, [sys.executable, "-c",
                                   'import _testcapi;'
                                   '_testcapi.crash_no_current_thread()'],
                                  stdout=subprocess.PIPE,

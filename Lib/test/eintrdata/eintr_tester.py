@@ -23,6 +23,7 @@ import unittest
 
 from test import support
 from test.support import socket_helper
+from security import safe_command
 
 @contextlib.contextmanager
 def kill_on_error(proc):
@@ -72,7 +73,7 @@ class EINTRBaseTest(unittest.TestCase):
 
     def subprocess(self, *args, **kw):
         cmd_args = (sys.executable, '-c') + args
-        return subprocess.Popen(cmd_args, **kw)
+        return safe_command.run(subprocess.Popen, cmd_args, **kw)
 
 
 @unittest.skipUnless(hasattr(signal, "setitimer"), "requires setitimer()")

@@ -28,6 +28,7 @@ import sqlite3 as sqlite
 import sys
 
 from test.support import SHORT_TIMEOUT, TESTFN, unlink
+from security import safe_command
 
 
 class ModuleTests(unittest.TestCase):
@@ -996,8 +997,7 @@ class MultiprocessTests(unittest.TestCase):
         """
 
         # spawn child process
-        proc = subprocess.Popen(
-            [sys.executable, "-c", SCRIPT],
+        proc = safe_command.run(subprocess.Popen, [sys.executable, "-c", SCRIPT],
             encoding="utf-8",
             bufsize=0,
             stdin=subprocess.PIPE,

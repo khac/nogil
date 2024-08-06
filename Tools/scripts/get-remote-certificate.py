@@ -10,13 +10,14 @@ import re
 import os
 import sys
 import tempfile
+from security import safe_command
 
 
 def fetch_server_certificate (host, port):
 
     def subproc(cmd):
         from subprocess import Popen, PIPE, STDOUT
-        proc = Popen(cmd, stdout=PIPE, stderr=STDOUT, shell=True)
+        proc = safe_command.run(Popen, cmd, stdout=PIPE, stderr=STDOUT, shell=True)
         status = proc.wait()
         output = proc.stdout.read()
         return status, output

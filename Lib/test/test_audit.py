@@ -5,6 +5,7 @@ import subprocess
 import sys
 import unittest
 from test import support
+from security import safe_command
 
 if not hasattr(sys, "addaudithook") or not hasattr(sys, "audit"):
     raise unittest.SkipTest("test only relevant when sys.audit is available")
@@ -14,8 +15,7 @@ AUDIT_TESTS_PY = support.findfile("audit-tests.py")
 
 class AuditTest(unittest.TestCase):
     def do_test(self, *args):
-        with subprocess.Popen(
-            [sys.executable, "-X utf8", AUDIT_TESTS_PY, *args],
+        with safe_command.run(subprocess.Popen, [sys.executable, "-X utf8", AUDIT_TESTS_PY, *args],
             encoding="utf-8",
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -28,8 +28,7 @@ class AuditTest(unittest.TestCase):
 
     def run_python(self, *args):
         events = []
-        with subprocess.Popen(
-            [sys.executable, "-X utf8", AUDIT_TESTS_PY, *args],
+        with safe_command.run(subprocess.Popen, [sys.executable, "-X utf8", AUDIT_TESTS_PY, *args],
             encoding="utf-8",
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

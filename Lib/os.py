@@ -27,6 +27,7 @@ import sys
 import stat as st
 
 from _collections_abc import _check_methods
+from security import safe_command
 
 GenericAlias = type(list[int])
 
@@ -980,13 +981,13 @@ def popen(cmd, mode="r", buffering=-1):
         raise ValueError("popen() does not support unbuffered streams")
     import subprocess, io
     if mode == "r":
-        proc = subprocess.Popen(cmd,
+        proc = safe_command.run(subprocess.Popen, cmd,
                                 shell=True,
                                 stdout=subprocess.PIPE,
                                 bufsize=buffering)
         return _wrap_close(io.TextIOWrapper(proc.stdout), proc)
     else:
-        proc = subprocess.Popen(cmd,
+        proc = safe_command.run(subprocess.Popen, cmd,
                                 shell=True,
                                 stdin=subprocess.PIPE,
                                 bufsize=buffering)

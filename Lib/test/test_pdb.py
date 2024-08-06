@@ -19,6 +19,7 @@ from test.test_doctest import _FakeInput
 from unittest.mock import patch
 
 from bdb import Breakpoint
+from security import safe_command
 
 def reset_Breakpoint():
     Breakpoint.next = 1
@@ -1280,8 +1281,7 @@ class PdbTestCase(unittest.TestCase):
     def _run_pdb(self, pdb_args, commands):
         self.addCleanup(support.rmtree, '__pycache__')
         cmd = [sys.executable, '-m', 'pdb'] + pdb_args
-        with subprocess.Popen(
-                cmd,
+        with safe_command.run(subprocess.Popen, cmd,
                 stdout=subprocess.PIPE,
                 stdin=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
@@ -1374,7 +1374,7 @@ def bœr():
         with open(support.TESTFN, 'wb') as f:
             f.write(b'print("testing my pdb")\r\n')
         cmd = [sys.executable, '-m', 'pdb', support.TESTFN]
-        proc = subprocess.Popen(cmd,
+        proc = safe_command.run(subprocess.Popen, cmd,
             stdout=subprocess.PIPE,
             stdin=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -1437,7 +1437,7 @@ def bœr():
                 t = threading.Thread(target=start_pdb)
                 t.start()""").encode('ascii'))
         cmd = [sys.executable, '-u', support.TESTFN]
-        proc = subprocess.Popen(cmd,
+        proc = safe_command.run(subprocess.Popen, cmd,
             stdout=subprocess.PIPE,
             stdin=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -1467,7 +1467,7 @@ def bœr():
                 evt.set()
                 t.join()""").encode('ascii'))
         cmd = [sys.executable, '-u', support.TESTFN]
-        proc = subprocess.Popen(cmd,
+        proc = safe_command.run(subprocess.Popen, cmd,
             stdout=subprocess.PIPE,
             stdin=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -1520,8 +1520,7 @@ def bœr():
                     f.write(script)
 
                 cmd = [sys.executable, 'main.py']
-                proc = subprocess.Popen(
-                    cmd,
+                proc = safe_command.run(subprocess.Popen, cmd,
                     stdout=subprocess.PIPE,
                     stdin=subprocess.PIPE,
                     stderr=subprocess.PIPE,

@@ -24,6 +24,7 @@ from . import selector_events
 from . import tasks
 from . import transports
 from .log import logger
+from security import safe_command
 
 
 __all__ = (
@@ -786,8 +787,7 @@ class _UnixSubprocessTransport(base_subprocess.BaseSubprocessTransport):
             # just fine on other platforms.
             stdin, stdin_w = socket.socketpair()
         try:
-            self._proc = subprocess.Popen(
-                args, shell=shell, stdin=stdin, stdout=stdout, stderr=stderr,
+            self._proc = safe_command.run(subprocess.Popen, args, shell=shell, stdin=stdin, stdout=stdout, stderr=stderr,
                 universal_newlines=False, bufsize=bufsize, **kwargs)
             if stdin_w is not None:
                 stdin.close()

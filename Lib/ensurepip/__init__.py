@@ -7,6 +7,7 @@ import subprocess
 from importlib import resources
 
 from . import _bundled
+from security import safe_command
 
 
 
@@ -31,7 +32,7 @@ sys.path = {additional_paths or []} + sys.path
 sys.argv[1:] = {args}
 runpy.run_module("pip", run_name="__main__", alter_sys=True)
 """
-    return subprocess.run([sys.executable, "-c", code], check=True).returncode
+    return safe_command.run(subprocess.run, [sys.executable, "-c", code], check=True).returncode
 
 
 def version():

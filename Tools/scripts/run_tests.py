@@ -10,6 +10,7 @@ simply passing a -u option to this script.
 import os
 import sys
 import test.support
+from security import safe_command
 
 
 def is_multiprocess_flag(arg):
@@ -46,7 +47,7 @@ def main(regrtest_args):
     print(' '.join(args))
     if sys.platform == 'win32':
         from subprocess import call
-        sys.exit(call(args))
+        sys.exit(safe_command.run(call, args))
     else:
         os.execv(sys.executable, args)
 

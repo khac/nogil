@@ -9,6 +9,7 @@ from unittest.case import _Outcome
 
 from unittest.test.support import (LoggingResult,
                                    ResultWithNoStartTestRunStopTestRun)
+from security import safe_command
 
 
 def resultFactory(*_):
@@ -1150,7 +1151,7 @@ class Test_TextTestRunner(unittest.TestCase):
         at_msg = b'Please use assertTrue instead.'
 
         # no args -> all the warnings are printed, unittest warnings only once
-        p = subprocess.Popen([sys.executable, '-E', '_test_warnings.py'], **opts)
+        p = safe_command.run(subprocess.Popen, [sys.executable, '-E', '_test_warnings.py'], **opts)
         with p:
             out, err = get_parse_out_err(p)
         self.assertIn(b'OK', err)
@@ -1172,7 +1173,7 @@ class Test_TextTestRunner(unittest.TestCase):
         )
         # in all these cases no warnings are printed
         for args in args_list:
-            p = subprocess.Popen(args, **opts)
+            p = safe_command.run(subprocess.Popen, args, **opts)
             with p:
                 out, err = get_parse_out_err(p)
             self.assertIn(b'OK', err)
@@ -1181,7 +1182,7 @@ class Test_TextTestRunner(unittest.TestCase):
 
         # passing 'always' as warnings arg -> all the warnings printed,
         #                                     unittest warnings only once
-        p = subprocess.Popen([sys.executable, '_test_warnings.py', 'always'],
+        p = safe_command.run(subprocess.Popen, [sys.executable, '_test_warnings.py', 'always'],
                              **opts)
         with p:
             out, err = get_parse_out_err(p)

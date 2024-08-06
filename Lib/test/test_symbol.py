@@ -4,6 +4,7 @@ import os
 import sys
 import sysconfig
 import subprocess
+from security import safe_command
 
 
 SYMBOL_FILE              = support.findfile('symbol.py')
@@ -25,7 +26,7 @@ class TestSymbolGeneration(unittest.TestCase):
             fp.writelines(lines[lines.index("#--end constants--\n"):])
 
     def _generate_symbols(self, grammar_file, target_symbol_py_file):
-        proc = subprocess.Popen([sys.executable,
+        proc = safe_command.run(subprocess.Popen, [sys.executable,
                                  GEN_SYMBOL_FILE,
                                  grammar_file,
                                  target_symbol_py_file], stderr=subprocess.PIPE)

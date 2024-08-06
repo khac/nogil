@@ -21,6 +21,7 @@ from test.support import (captured_stdout, captured_stderr, requires_zlib,
 import unittest
 import venv
 from unittest.mock import patch
+from security import safe_command
 
 try:
     import ctypes
@@ -35,7 +36,7 @@ requireVenvCreate = unittest.skipUnless(
     'cannot run venv.create from within a venv on this platform')
 
 def check_output(cmd, encoding=None):
-    p = subprocess.Popen(cmd,
+    p = safe_command.run(subprocess.Popen, cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         encoding=encoding)

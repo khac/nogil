@@ -1,13 +1,13 @@
 import csv
 import subprocess
+from security import safe_command
 
 
 _NOT_SET = object()
 
 
 def run_cmd(argv, **kwargs):
-    proc = subprocess.run(
-            argv,
+    proc = safe_command.run(subprocess.run, argv,
             #capture_output=True,
             #stderr=subprocess.STDOUT,
             stdout=subprocess.PIPE,

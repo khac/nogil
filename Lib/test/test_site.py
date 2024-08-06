@@ -24,6 +24,7 @@ import urllib.error
 import urllib.request
 from unittest import mock
 from copy import copy
+from security import safe_command
 
 # These tests are not particularly useful if Python was invoked with -S.
 # If you add tests that are useful under -S, this skip should be moved
@@ -206,13 +207,13 @@ class HelperFunctionsTests(unittest.TestCase):
         self.assertIn(usersite, sys.path)
 
         env = os.environ.copy()
-        rc = subprocess.call([sys.executable, '-c',
+        rc = safe_command.run(subprocess.call, [sys.executable, '-c',
             'import sys; sys.exit(%r in sys.path)' % usersite],
             env=env)
         self.assertEqual(rc, 1)
 
         env = os.environ.copy()
-        rc = subprocess.call([sys.executable, '-s', '-c',
+        rc = safe_command.run(subprocess.call, [sys.executable, '-s', '-c',
             'import sys; sys.exit(%r in sys.path)' % usersite],
             env=env)
         if usersite == site.getsitepackages()[0]:
@@ -222,7 +223,7 @@ class HelperFunctionsTests(unittest.TestCase):
 
         env = os.environ.copy()
         env["PYTHONNOUSERSITE"] = "1"
-        rc = subprocess.call([sys.executable, '-c',
+        rc = safe_command.run(subprocess.call, [sys.executable, '-c',
             'import sys; sys.exit(%r in sys.path)' % usersite],
             env=env)
         if usersite == site.getsitepackages()[0]:
@@ -233,7 +234,7 @@ class HelperFunctionsTests(unittest.TestCase):
 
         env = os.environ.copy()
         env["PYTHONUSERBASE"] = "/tmp"
-        rc = subprocess.call([sys.executable, '-c',
+        rc = safe_command.run(subprocess.call, [sys.executable, '-c',
             'import sys, site; sys.exit(site.USER_BASE.startswith("/tmp"))'],
             env=env)
         self.assertEqual(rc, 1,
@@ -476,7 +477,7 @@ class StartupImportTests(unittest.TestCase):
 
     def test_startup_imports(self):
         # Get sys.path in isolated mode (python3 -I)
-        popen = subprocess.Popen([sys.executable, '-I', '-c',
+        popen = safe_command.run(subprocess.Popen, [sys.executable, '-I', '-c',
                                   'import sys; print(repr(sys.path))'],
                                  stdout=subprocess.PIPE,
                                  encoding='utf-8')
@@ -494,7 +495,7 @@ class StartupImportTests(unittest.TestCase):
 
         # This tests checks which modules are loaded by Python when it
         # initially starts upon startup.
-        popen = subprocess.Popen([sys.executable, '-I', '-v', '-c',
+        popen = safe_command.run(subprocess.Popen, [sys.executable, '-I', '-v', '-c',
                                   'import sys; print(set(sys.modules))'],
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE,
@@ -523,19 +524,19 @@ class StartupImportTests(unittest.TestCase):
         self.assertFalse(modules.intersection(collection_mods), stderr)
 
     def test_startup_interactivehook(self):
-        r = subprocess.Popen([sys.executable, '-c',
+        r = safe_command.run(subprocess.Popen, [sys.executable, '-c',
             'import sys; sys.exit(hasattr(sys, "__interactivehook__"))']).wait()
         self.assertTrue(r, "'__interactivehook__' not added by site")
 
     def test_startup_interactivehook_isolated(self):
         # issue28192 readline is not automatically enabled in isolated mode
-        r = subprocess.Popen([sys.executable, '-I', '-c',
+        r = safe_command.run(subprocess.Popen, [sys.executable, '-I', '-c',
             'import sys; sys.exit(hasattr(sys, "__interactivehook__"))']).wait()
         self.assertFalse(r, "'__interactivehook__' added in isolated mode")
 
     def test_startup_interactivehook_isolated_explicit(self):
         # issue28192 readline can be explicitly enabled in isolated mode
-        r = subprocess.Popen([sys.executable, '-I', '-c',
+        r = safe_command.run(subprocess.Popen, [sys.executable, '-I', '-c',
             'import site, sys; site.enablerlcompleter(); sys.exit(hasattr(sys, "__interactivehook__"))']).wait()
         self.assertTrue(r, "'__interactivehook__' not added by enablerlcompleter()")
 
@@ -612,7 +613,7 @@ class _pthFileTests(unittest.TestCase):
         env = os.environ.copy()
         env['PYTHONPATH'] = 'from-env'
         env['PATH'] = '{};{}'.format(exe_prefix, os.getenv('PATH'))
-        rc = subprocess.call([exe_file, '-c',
+        rc = safe_command.run(subprocess.call, [exe_file, '-c',
             'import sys; sys.exit(not sys.flags.no_site and '
             '%r in sys.path and %r in sys.path and %r not in sys.path and '
             'all("\\r" not in p and "\\n" not in p for p in sys.path))' % (
@@ -637,7 +638,7 @@ class _pthFileTests(unittest.TestCase):
         env = os.environ.copy()
         env['PYTHONPATH'] = 'from-env'
         env['PATH'] = '{};{}'.format(exe_prefix, os.getenv('PATH'))
-        rc = subprocess.call([exe_file, '-c',
+        rc = safe_command.run(subprocess.call, [exe_file, '-c',
             'import sys; sys.exit(not sys.flags.no_site and '
             '%r in sys.path and %r in sys.path and %r not in sys.path and '
             'all("\\r" not in p and "\\n" not in p for p in sys.path))' % (

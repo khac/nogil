@@ -2,6 +2,7 @@
 
 from __future__ import division
 from __future__ import print_function
+from security import safe_command
 
 """
 ccbench, a Python concurrency benchmark.
@@ -288,7 +289,7 @@ def latency_client(addr, nb_pings, interval):
 def run_latency_client(**kwargs):
     cmd_line = [sys.executable, '-E', os.path.abspath(__file__)]
     cmd_line.extend(['--latclient', repr(kwargs)])
-    return subprocess.Popen(cmd_line) #, stdin=subprocess.PIPE,
+    return safe_command.run(subprocess.Popen, cmd_line) #, stdin=subprocess.PIPE,
                             #stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 def run_latency_test(func, args, nthreads):
@@ -421,7 +422,7 @@ def bandwidth_client(addr, packet_size, duration):
 def run_bandwidth_client(**kwargs):
     cmd_line = [sys.executable, '-E', os.path.abspath(__file__)]
     cmd_line.extend(['--bwclient', repr(kwargs)])
-    return subprocess.Popen(cmd_line) #, stdin=subprocess.PIPE,
+    return safe_command.run(subprocess.Popen, cmd_line) #, stdin=subprocess.PIPE,
                             #stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 def run_bandwidth_test(func, args, nthreads):
