@@ -12,6 +12,8 @@ import time
 import unittest
 from test import support
 from test.support.script_helper import assert_python_ok, spawn_python
+from security import safe_command
+
 try:
     import _testcapi
 except ImportError:
@@ -90,8 +92,7 @@ class PosixTests(unittest.TestCase):
     @unittest.skipUnless(sys.executable, "sys.executable required.")
     def test_keyboard_interrupt_exit_code(self):
         """KeyboardInterrupt triggers exit via SIGINT."""
-        process = subprocess.run(
-                [sys.executable, "-c",
+        process = safe_command.run(subprocess.run, [sys.executable, "-c",
                  "import os, signal, time\n"
                  "os.kill(os.getpid(), signal.SIGINT)\n"
                  "for _ in range(999): time.sleep(0.01)"],
@@ -144,8 +145,7 @@ class WindowsSignalTests(unittest.TestCase):
         # as that requires setting up a console control handler in a child
         # in its own process group.  Doable, but quite complicated.  (see
         # @eryksun on https://github.com/python/cpython/pull/11862)
-        process = subprocess.run(
-                [sys.executable, "-c", "raise KeyboardInterrupt"],
+        process = safe_command.run(subprocess.run, [sys.executable, "-c", "raise KeyboardInterrupt"],
                 stderr=subprocess.PIPE)
         self.assertIn(b"KeyboardInterrupt", process.stderr)
         STATUS_CONTROL_C_EXIT = 0xC000013A

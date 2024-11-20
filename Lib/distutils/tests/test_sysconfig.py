@@ -11,6 +11,7 @@ from distutils import sysconfig
 from distutils.ccompiler import get_default_compiler
 from distutils.tests import support
 from test.support import TESTFN, run_unittest, check_warnings, swap_item
+from security import safe_command
 
 class SysconfigTestCase(support.EnvironGuard, unittest.TestCase):
     def setUp(self):
@@ -256,7 +257,7 @@ class SysconfigTestCase(support.EnvironGuard, unittest.TestCase):
                 # is found but it should not raise an exception.
                 rc = config.try_compile('int x;')
                 '''))
-        p = subprocess.Popen([str(sys.executable), TESTFN],
+        p = safe_command.run(subprocess.Popen, [str(sys.executable), TESTFN],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 universal_newlines=True)

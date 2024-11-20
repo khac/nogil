@@ -12,6 +12,7 @@ import zipfile
 
 from importlib.util import source_from_cache
 from test.support import make_legacy_pyc
+from security import safe_command
 
 
 # Cached result of the expensive test performed in the function below.
@@ -124,7 +125,7 @@ def run_python_until_end(*args, **env_vars):
 
     env.update(env_vars)
     cmd_line.extend(args)
-    proc = subprocess.Popen(cmd_line, stdin=subprocess.PIPE,
+    proc = safe_command.run(subprocess.Popen, cmd_line, stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                          env=env, cwd=cwd)
     with proc:
@@ -183,7 +184,7 @@ def spawn_python(*args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kw):
     # - http://lists.gnu.org/archive/html/bug-readline/2007-08/msg00004.html
     env = kw.setdefault('env', dict(os.environ))
     env['TERM'] = 'vt100'
-    return subprocess.Popen(cmd_line, stdin=subprocess.PIPE,
+    return safe_command.run(subprocess.Popen, cmd_line, stdin=subprocess.PIPE,
                             stdout=stdout, stderr=stderr,
                             **kw)
 

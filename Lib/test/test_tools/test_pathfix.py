@@ -4,6 +4,7 @@ import sys
 import unittest
 from test import support
 from test.test_tools import scriptsdir, skip_if_missing
+from security import safe_command
 
 
 # need Tools/script/ directory: skip if run on Python installed on the system
@@ -31,8 +32,7 @@ class TestPathfixFunctional(unittest.TestCase):
             f.write(f'{shebang}\n' + 'print("Hello world")\n')
 
         encoding = sys.getfilesystemencoding()
-        proc = subprocess.run(
-            [sys.executable, self.script,
+        proc = safe_command.run(subprocess.run, [sys.executable, self.script,
              *pathfix_flags, '-n', pathfix_arg],
             env={**os.environ, 'PYTHONIOENCODING': encoding},
             capture_output=True)

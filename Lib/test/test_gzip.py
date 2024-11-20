@@ -13,6 +13,7 @@ from subprocess import PIPE, Popen
 from test import support
 from test.support import _4G, bigmemtest
 from test.support.script_helper import assert_python_ok, assert_python_failure
+from security import safe_command
 
 gzip = support.import_module('gzip')
 
@@ -748,7 +749,7 @@ class TestCommandLine(unittest.TestCase):
                 gzip_file.write(self.data)
 
             args = sys.executable, '-m', 'gzip', '-d'
-            with Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE) as proc:
+            with safe_command.run(Popen, args, stdin=PIPE, stdout=PIPE, stderr=PIPE) as proc:
                 out, err = proc.communicate(bytes_io.getvalue())
 
         self.assertEqual(err, b'')
@@ -780,7 +781,7 @@ class TestCommandLine(unittest.TestCase):
     @create_and_remove_directory(TEMPDIR)
     def test_compress_stdin_outfile(self):
         args = sys.executable, '-m', 'gzip'
-        with Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE) as proc:
+        with safe_command.run(Popen, args, stdin=PIPE, stdout=PIPE, stderr=PIPE) as proc:
             out, err = proc.communicate(self.data)
 
         self.assertEqual(err, b'')

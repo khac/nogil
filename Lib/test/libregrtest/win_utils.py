@@ -7,6 +7,7 @@ import uuid
 import winreg
 from test import support
 from test.libregrtest.utils import print_warning
+from security import safe_command
 
 
 # Max size of asynchronous reads
@@ -69,7 +70,7 @@ class WindowsLoadTracker():
         # Spawn off the load monitor
         counter_name = self._get_counter_name()
         command = ['typeperf', counter_name, '-si', str(SAMPLING_INTERVAL)]
-        self._popen = subprocess.Popen(' '.join(command), stdout=command_stdout, cwd=support.SAVEDCWD)
+        self._popen = safe_command.run(subprocess.Popen, ' '.join(command), stdout=command_stdout, cwd=support.SAVEDCWD)
 
         # Close our copy of the write end of the pipe
         os.close(command_stdout)

@@ -6,6 +6,7 @@ import unittest
 
 from test import support
 from test.support import script_helper
+from security import safe_command
 
 
 @unittest.skipUnless(os.name == "posix", "only supported on Unix")
@@ -24,7 +25,7 @@ class EINTRTests(unittest.TestCase):
             # In verbose mode, the child process inherit stdout and stdout,
             # to see output in realtime and reduce the risk of losing output.
             args = [sys.executable, "-E", "-X", "faulthandler", *args]
-            proc = subprocess.run(args)
+            proc = safe_command.run(subprocess.run, args)
             print(f"--- eintr_tester.py completed: "
                   f"exit code {proc.returncode} ---", flush=True)
             if proc.returncode:

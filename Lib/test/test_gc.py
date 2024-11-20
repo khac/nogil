@@ -13,6 +13,7 @@ import textwrap
 import threading
 import time
 import weakref
+from security import safe_command
 
 try:
     from _testcapi import with_tp_del
@@ -676,7 +677,7 @@ class GCTests(unittest.TestCase):
             gc.set_debug(%s)
         """
         def run_command(code):
-            p = subprocess.Popen([sys.executable, "-Wd", "-c", code],
+            p = safe_command.run(subprocess.Popen, [sys.executable, "-Wd", "-c", code],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             stdout, stderr = p.communicate()
@@ -1144,7 +1145,7 @@ class GCCallbackTests(unittest.TestCase):
             # when it reaches the broken object
             gc_collect()
         ''')
-        p = subprocess.Popen([sys.executable, "-c", code],
+        p = safe_command.run(subprocess.Popen, [sys.executable, "-c", code],
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()

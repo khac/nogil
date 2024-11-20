@@ -20,6 +20,7 @@ from test.libregrtest.runtest import (
     runtest, is_failed, TestResult, Interrupted, Timeout, ChildError, PROGRESS_MIN_TIME)
 from test.libregrtest.setup import setup_tests
 from test.libregrtest.utils import format_duration, print_warning
+from security import safe_command
 
 
 # Display the running tests if nothing happened last N seconds
@@ -68,7 +69,7 @@ def run_test_in_subprocess(testname: str, ns: Namespace) -> subprocess.Popen:
     kw = {}
     if USE_PROCESS_GROUP:
         kw['start_new_session'] = True
-    return subprocess.Popen(cmd,
+    return safe_command.run(subprocess.Popen, cmd,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             universal_newlines=True,

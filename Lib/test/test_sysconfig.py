@@ -15,6 +15,7 @@ from sysconfig import (get_paths, get_platform, get_config_vars,
                        _get_default_scheme, _expand_vars,
                        get_scheme_names, get_config_var, _main)
 import _osx_support
+from security import safe_command
 
 class TestSysConfig(unittest.TestCase):
 
@@ -283,7 +284,7 @@ class TestSysConfig(unittest.TestCase):
         if 'MACOSX_DEPLOYMENT_TARGET' in env:
             del env['MACOSX_DEPLOYMENT_TARGET']
 
-        p = subprocess.Popen([
+        p = safe_command.run(subprocess.Popen, [
                 sys.executable, '-c',
                 'import sysconfig; print(sysconfig.get_platform())',
             ],
@@ -302,7 +303,7 @@ class TestSysConfig(unittest.TestCase):
         env = os.environ.copy()
         env['MACOSX_DEPLOYMENT_TARGET'] = '10.1'
 
-        p = subprocess.Popen([
+        p = safe_command.run(subprocess.Popen, [
                 sys.executable, '-c',
                 'import sysconfig; print(sysconfig.get_platform())',
             ],

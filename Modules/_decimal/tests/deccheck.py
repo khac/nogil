@@ -48,6 +48,7 @@ from randdec import randfloat, all_unary, all_binary, all_ternary
 from randdec import unary_optarg, binary_optarg, ternary_optarg
 from formathelper import rand_format, rand_locale
 from _pydecimal import _dec_from_triple
+from security import safe_command
 
 C = import_fresh_module('decimal', fresh=['_decimal'])
 P = import_fresh_module('decimal', blocked=['_decimal'])
@@ -1297,7 +1298,7 @@ if __name__ == '__main__':
                     return
 
                 cmd = [sys.executable, "deccheck.py", "--%s" % args.time, "--single", test]
-                p = subprocess.Popen(cmd, stdout=PIPE, stderr=STDOUT)
+                p = safe_command.run(subprocess.Popen, cmd, stdout=PIPE, stderr=STDOUT)
                 out, _ = p.communicate()
                 write_output(out, p.returncode)
 

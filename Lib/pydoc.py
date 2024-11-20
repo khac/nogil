@@ -37,6 +37,8 @@ This can be overridden by setting the PYTHONDOCS environment variable
 to a different URL or to a local directory containing the Library
 Reference Manual pages.
 """
+from security import safe_command
+
 __all__ = ['help']
 __author__ = "Ka-Ping Yee <ping@lfw.org>"
 __date__ = "26 February 2001"
@@ -1594,7 +1596,7 @@ def plain(text):
 def pipepager(text, cmd):
     """Page through text by feeding it to another program."""
     import subprocess
-    proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE)
+    proc = safe_command.run(subprocess.Popen, cmd, shell=True, stdin=subprocess.PIPE)
     try:
         with io.TextIOWrapper(proc.stdin, errors='backslashreplace') as pipe:
             try:

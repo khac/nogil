@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+from security import safe_command
 
 
 MS_WINDOWS = (os.name == 'nt')
@@ -81,7 +82,7 @@ class EmbeddingTestsMixin:
             env = env.copy()
             env['SYSTEMROOT'] = os.environ['SYSTEMROOT']
 
-        p = subprocess.Popen(cmd,
+        p = safe_command.run(subprocess.Popen, cmd,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
                              universal_newlines=True,
@@ -530,7 +531,7 @@ class InitConfigTests(EmbeddingTestsMixin, unittest.TestCase):
         # Use -S to not import the site module: get the proper configuration
         # when test_embed is run from a venv (bpo-35313)
         args = [sys.executable, '-S', '-c', code]
-        proc = subprocess.run(args, env=env,
+        proc = safe_command.run(subprocess.run, args, env=env,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE)
         if proc.returncode:

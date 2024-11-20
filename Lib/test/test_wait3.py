@@ -8,6 +8,7 @@ import time
 import unittest
 from test.fork_wait import ForkWait
 from test import support
+from security import safe_command
 
 if not hasattr(os, 'fork'):
     raise unittest.SkipTest("os.fork not defined")
@@ -38,7 +39,7 @@ class Wait3Test(ForkWait):
         # its exit status does not return uninitialized memory in the rusage
         # structure. See bpo-36279.
         args = [sys.executable, '-c', 'import sys; sys.stdin.read()']
-        proc = subprocess.Popen(args, stdin=subprocess.PIPE)
+        proc = safe_command.run(subprocess.Popen, args, stdin=subprocess.PIPE)
         try:
             pid, status, rusage = os.wait3(os.WNOHANG)
             self.assertEqual(0, pid)

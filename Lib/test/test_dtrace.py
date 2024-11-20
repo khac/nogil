@@ -7,6 +7,7 @@ import types
 import unittest
 
 from test.support import findfile
+from security import safe_command
 
 
 def abspath(filename):
@@ -62,7 +63,7 @@ class TraceBackend:
 
     def trace(self, script_file, subcommand=None):
         command = self.generate_trace_command(script_file, subcommand)
-        stdout, _ = subprocess.Popen(command,
+        stdout, _ = safe_command.run(subprocess.Popen, command,
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT,
                                      universal_newlines=True).communicate()

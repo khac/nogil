@@ -9,6 +9,7 @@ from test import support
 from test.support.script_helper import assert_python_ok
 
 from test.test_tools import scriptsdir, skip_if_missing
+from security import safe_command
 
 skip_if_missing()
 
@@ -21,8 +22,7 @@ class PindentTests(unittest.TestCase):
             self.assertEqual(f1.readlines(), f2.readlines())
 
     def pindent(self, source, *args):
-        with subprocess.Popen(
-                (sys.executable, self.script) + args,
+        with safe_command.run(subprocess.Popen, (sys.executable, self.script) + args,
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                 universal_newlines=True) as proc:
             out, err = proc.communicate(source)
