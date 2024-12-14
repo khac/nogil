@@ -21,6 +21,8 @@ import weakref
 import platform
 import sysconfig
 import functools
+import ssl
+
 try:
     import ctypes
 except ImportError:
@@ -1255,7 +1257,7 @@ class ContextTests(unittest.TestCase):
             ctx.maximum_version, maximum_range
         )
 
-        ctx.minimum_version = ssl.TLSVersion.TLSv1_1
+        ctx.minimum_version = ssl.TLSVersion.TLSv1_2
         ctx.maximum_version = ssl.TLSVersion.TLSv1_2
         self.assertEqual(
             ctx.minimum_version, ssl.TLSVersion.TLSv1_1
